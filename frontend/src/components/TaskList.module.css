@@ -1,0 +1,14 @@
+.taskList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.taskListItem + .taskListItem {
+  margin-top: 12px;
+  border-top: 1px solid #ddd;
+  padding-top: 12px;
+}
