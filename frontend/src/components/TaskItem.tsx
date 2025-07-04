@@ -1,9 +1,10 @@
-import type { Task } from '@/api/types';
+import type { Task } from "@/api/types";
 
 export function TaskItem({ task }: { task: Task }) {
   return (
     <li>
-      <strong>{task.username}</strong> — {task.email}
+      <strong>{task.username}</strong>
+      <span>{task.email}</span>
       <p>{task.text}</p>
       <span>{task.completed ? 'Выполнено' : 'Не выполнено'}</span>
     </li>
