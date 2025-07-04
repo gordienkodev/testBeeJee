@@ -1,0 +1,49 @@
+.form {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 0;
+    max-width: 600px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+}
+
+.form input,
+.form textarea {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex: 1 1 200px;
+    height: 2.5rem;
+    box-sizing: border-box;
+}
+
+.form textarea {
+    resize: vertical;
+}
+
+.form button {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 2.5rem;
+}
+
+@media (max-width: 480px) {
+    .form {
+        flex-direction: column;
+    }
+
+    .form input,
+    .form textarea,
+    .form button {
+        flex: none;
+        width: 100%;
+        height: auto;
+    }
+
+
+}
