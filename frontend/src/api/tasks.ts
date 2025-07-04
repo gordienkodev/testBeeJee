@@ -1,7 +1,6 @@
-import type { Task, TaskResponse } from './types';
-const API_URL = import.meta.env.VITE_API_URL;
+import type { Task, TaskInput, TaskResponse } from './types';
 
-console.log('API_URL', API_URL);
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function fetchTasks(
   page: number,
@@ -18,12 +17,39 @@ export async function fetchTasks(
   return res.json();
 }
 
-export async function createTask(username: string, email: string, text: string): Promise<Task> {
+export async function createTask(task: TaskInput): Promise<Task> {
   const res = await fetch(`${API_URL}/api/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, text }),
+    body: JSON.stringify(task),
   });
-  if (!res.ok) throw new Error('Failed to create task');
+
+  if (!res.ok) {
+    const status = res.status;
+    const statusText = res.statusText;
+    const text = await res.text();
+
+    console.error('Server error:', {
+      status,
+      statusText,
+      responseBody: text,
+    });
+
+    let message = `Request failed with status ${status}`;
+
+    try {
+      if (text) {
+        const data = JSON.parse(text);
+        message = data?.error || message;
+      }
+    } catch {
+      if (text) {
+        message += `: ${text}`;
+      }
+    }
+
+    throw new Error(message);
+  }
+
   return res.json();
 }

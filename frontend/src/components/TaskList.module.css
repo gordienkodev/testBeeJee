@@ -7,6 +7,7 @@
 
 .headerListItem {
   display: flex;
+  justify-content: space-evenly;
   gap: 1rem;
 }
 
@@ -36,8 +37,8 @@
 .taskList li > strong,
 .taskList li > p {
   flex-basis: 25%;
-  flex-shrink: 0;
   max-width: 25%;
+  flex-shrink: 1;
 }
 
 .taskList li > p {

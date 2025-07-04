@@ -1,21 +1,18 @@
 import { useState } from 'react';
 import styles from './TaskForm.module.css';
+import { useCreateTask } from '@/hooks/useCreateTask';
 
-type TaskFormProps = {
-  onAdd: (task: { username: string; email: string; text: string }) => void;
-};
-
-export const TaskForm = ({ onAdd }: TaskFormProps) => {
+export const TaskForm = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [text, setText] = useState('');
+  const { createTask, loading, error } = useCreateTask();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!username || !email || !text) return;
 
-    onAdd({ username, email, text });
+    await createTask({ username, email, text });
 
     setUsername('');
     setEmail('');
@@ -44,7 +41,10 @@ export const TaskForm = ({ onAdd }: TaskFormProps) => {
         onChange={(e) => setText(e.target.value)}
         required
       />
-      <button type="submit">Добавить</button>
+      <button type="submit" disabled={loading}>
+        Добавить
+      </button>
+      {error && <p className={styles.error}>{error}</p>}
     </form>
   );
 };

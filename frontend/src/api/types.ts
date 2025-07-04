@@ -1,3 +1,9 @@
+export interface TaskInput {
+  username: string;
+  email: string;
+  text: string;
+}
+
 export interface Task {
   id: number;
   username: string;
