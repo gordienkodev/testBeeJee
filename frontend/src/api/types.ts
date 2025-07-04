@@ -3,10 +3,15 @@ export interface Task {
   username: string;
   email: string;
   text: string;
-  completed: boolean;
+  status: boolean;
+  isEdited: boolean;
 }
 
 export interface TaskResponse {
   tasks: Task[];
   total: number;
+  page: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }

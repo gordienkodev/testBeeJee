@@ -1,28 +1,41 @@
+import { useState } from 'react';
 import styles from './TaskList.module.css';
-import { TaskItem } from './TaskItem';
 import { useTasks } from '@/hooks/useTasks';
+import { Pagination } from './Pagination';
+import { TaskItem } from './TaskItem';
 
-export function TaskList() {
-  const { tasks, loading, error } = useTasks(1);
+export const TaskList = () => {
+  const [page, setPage] = useState(1);
+  const { data, loading, error } = useTasks(page);
 
   if (loading) return <p>Загрузка...</p>;
-  if (error) return <p>Ошибка загрузки</p>;
+  if (error) return <p>Ошибка: {error}</p>;
+  if (!data) return null;
 
   return (
-    <>
+    <div className={styles.wrapper}>
       <ul className={styles.headerList}>
         <li>
-          <span>Имя пользователя</span>
+          <span>Имя</span>
           <span>Email</span>
-          <span>Текст задачи</span>
+          <span>Задача</span>
           <span>Статус</span>
         </li>
       </ul>
+
       <ul className={styles.taskList}>
-        {tasks.map((task) => (
+        {data.tasks.map((task) => (
           <TaskItem key={task.id} task={task} />
         ))}
       </ul>
-    </>
+
+      <Pagination
+        page={data.page}
+        totalPages={data.totalPages}
+        hasPrev={data.hasPrev}
+        hasNext={data.hasNext}
+        onPageChange={setPage}
+      />
+    </div>
   );
-}
+};

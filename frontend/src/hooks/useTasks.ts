@@ -1,22 +1,33 @@
 import { useEffect, useState } from 'react';
 import { fetchTasks } from '@/api/tasks';
-import type { Task } from '@/api/types';
+import type { TaskResponse } from '@/api/types';
 
-export function useTasks(page: number = 1) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
+export const useTasks = (page: number) => {
+  const [data, setData] = useState<TaskResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetchTasks(page)
-      .then((res) => {
-        setTasks(res.tasks);
+    const load = async () => {
+      try {
+        setLoading(true);
         setError(null);
-      })
-      .catch(setError)
-      .finally(() => setLoading(false));
+
+        const json = await fetchTasks(page);
+        setData(json);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('Unknown error');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
   }, [page]);
 
-  return { tasks, loading, error };
-}
+  return { data, loading, error };
+};
