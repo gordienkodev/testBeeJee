@@ -28,24 +28,15 @@ export const TaskList = () => {
   return (
     <div className={styles.wrapper}>
       <ul className={styles.headerList}>
-        <li style={{ display: 'flex', gap: '1rem' }}>
-          <div
-            style={{ cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => onSortChange('username')}
-          >
+        <li className={styles.headerListItem}>
+          <div className={styles.sortableHeader} onClick={() => onSortChange('username')}>
             Имя {sortField === 'username' ? (sortOrder === 'ASC' ? '▲' : '▼') : ''}
           </div>
-          <div
-            style={{ cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => onSortChange('email')}
-          >
+          <div className={styles.sortableHeader} onClick={() => onSortChange('email')}>
             Email {sortField === 'email' ? (sortOrder === 'ASC' ? '▲' : '▼') : ''}
           </div>
           <span>Задача</span>
-          <div
-            style={{ cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => onSortChange('status')}
-          >
+          <div className={styles.sortableHeader} onClick={() => onSortChange('status')}>
             Статус {sortField === 'status' ? (sortOrder === 'ASC' ? '▲' : '▼') : ''}
           </div>
         </li>

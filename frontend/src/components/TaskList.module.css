@@ -5,6 +5,11 @@
   margin: 0;
 }
 
+.headerListItem {
+  display: flex;
+  gap: 1rem;
+}
+
 .headerList li,
 .taskList li {
   display: flex;
@@ -38,6 +43,11 @@
 .taskList li > p {
   white-space: pre-wrap;
   margin: 0;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
 }
 
 @media (max-width: 768px) {
