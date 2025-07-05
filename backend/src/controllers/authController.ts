@@ -19,7 +19,11 @@ export const login = (req: Request, res: Response): void => {
 };
 
 export const logout = (_req: Request, res: Response): void => {
-    res.clearCookie('token');
+    res.clearCookie('token', {
+        sameSite: 'none',
+        secure: true,
+        path: '/',
+    });
     res.json({ success: true });
 };
 
