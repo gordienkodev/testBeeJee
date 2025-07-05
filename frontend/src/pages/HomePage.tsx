@@ -18,7 +18,7 @@ export function HomePage() {
 
   return (
     <div className={styles.homePage}>
-      <button onClick={handleAuthAction}>{isAuthenticated ? 'Выйти' : 'Войти'}</button>
+      <button className={styles.button} onClick={handleAuthAction}>{isAuthenticated ? 'Выйти' : 'Войти'}</button>
       <TaskForm />
       <TaskList />
     </div>
