@@ -1,22 +1,30 @@
-import { useEffect, useState } from 'react';
 import { fetchTasks } from '@/api/tasks';
-import type { Task } from '@/api/types';
+import type { TaskResponse } from '@/api/types';
+import { useState, useEffect } from 'react';
 
-export function useTasks(page: number = 1) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
+interface UseTasksParams {
+  page: number;
+  sortField?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+export const useTasks = ({ page, sortField, sortOrder }: UseTasksParams) => {
+  const [data, setData] = useState<TaskResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    fetchTasks(page)
-      .then((res) => {
-        setTasks(res.tasks);
-        setError(null);
-      })
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [page]);
+    setError(null);
 
-  return { tasks, loading, error };
-}
+    fetchTasks(page, sortField, sortOrder)
+      .then(setData)
+      .catch((e) => {
+        setError(e.message);
+        setData(null);
+      })
+      .finally(() => setLoading(false));
+  }, [page, sortField, sortOrder]);
+
+  return { data, loading, error };
+};
