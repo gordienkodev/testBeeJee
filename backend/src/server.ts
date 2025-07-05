@@ -4,13 +4,22 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { AppDataSource } from './data-source';
 import taskRoutes from './routes/taskRoutes';
+import authRoutes from './routes/authRoutes';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'https://test-bee-jee.vercel.app/'],
+    credentials: true
+}));
+
 app.use(express.json());
+app.use(cookieParser());
+
+app.use('/api', authRoutes);
 app.use('/api', taskRoutes);
 
 AppDataSource.initialize()
@@ -24,3 +33,4 @@ AppDataSource.initialize()
         console.error('Database connection failed:', err);
         process.exit(1);
     });
+

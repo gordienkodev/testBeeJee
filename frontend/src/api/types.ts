@@ -21,3 +21,19 @@ export interface TaskResponse {
   hasNext: boolean;
   hasPrev: boolean;
 }
+
+export interface LoginResponse {
+  success: boolean;
+}
+
+export interface LogoutResponse {
+  success: boolean;
+}
+
+export interface MeResponse {
+  isAdmin: boolean;
+}
+
+export interface ApiError {
+  error: string;
+}
