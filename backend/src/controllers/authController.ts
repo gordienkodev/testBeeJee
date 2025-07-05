@@ -10,7 +10,8 @@ export const login = (req: Request, res: Response): void => {
 
     res.cookie('token', 'admin-token', {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
+        secure: true,
         maxAge: 3600000
     });
 
