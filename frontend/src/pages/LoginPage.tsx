@@ -64,7 +64,7 @@ export function LoginPage() {
           </form>
         )}
       </div>
-      
+
       <button className={styles.button} onClick={handleGoToList}>
         Перейти к списку задач
       </button>

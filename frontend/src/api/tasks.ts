@@ -53,3 +53,19 @@ export async function createTask(task: TaskInput): Promise<Task> {
 
   return res.json();
 }
+
+export async function updateTask(
+  id: number,
+  data: { text: string; status: boolean }
+): Promise<void> {
+  const res = await fetch(`${API_URL}/api/tasks/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    throw new Error(`Ошибка: ${res.status}`);
+  }
+}

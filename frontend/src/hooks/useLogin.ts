@@ -1,29 +1,35 @@
 import { useState, useEffect } from 'react';
 import { login as loginRequest, logout as logoutRequest, getMe } from '../api/auth';
+import { useAuthStore } from '@/store/authStore';
 
 export function useLogin() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const response = await getMe();
         if (response.isAdmin) {
-          setIsAuthenticated(true);
+          setAuthenticated(true);
           setSuccess(true);
+        } else {
+          setAuthenticated(false);
+          setSuccess(false);
         }
       } catch (err) {
         console.error('checkAuth error:', err);
-        setIsAuthenticated(false);
+        setAuthenticated(false);
         setSuccess(false);
       }
     };
 
     checkAuth();
-  }, []);
+  }, [setAuthenticated]);
 
   const login = async (username: string, password: string): Promise<boolean> => {
     setError(null);
@@ -32,8 +38,8 @@ export function useLogin() {
     try {
       const response = await loginRequest(username, password);
       if (response.success) {
+        setAuthenticated(true);
         setSuccess(true);
-        setIsAuthenticated(true);
         return true;
       }
       return false;
@@ -49,12 +55,8 @@ export function useLogin() {
   const logout = async () => {
     try {
       await logoutRequest();
-      setIsAuthenticated(false);
-      setSuccess(false);
-      setError(null);
-    } catch (err) {
-      console.error('Logout error:', err);
-      setIsAuthenticated(false);
+    } finally {
+      setAuthenticated(false);
       setSuccess(false);
       setError(null);
     }

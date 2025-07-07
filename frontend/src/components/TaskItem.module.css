@@ -1,0 +1,32 @@
+.taskItemControls {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+
+  border-bottom: 1px solid #ccc;
+}
+
+.saveButton {
+  background-color: #f7f7f7;
+  border: 1px solid #002cbe;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.saveButton:hover {
+  background-color: #002cbe;
+  border-color: #494949;
+  color: white;
+}
+
+.editedMark {
+  font-style: normal;
+  color: #888;
+  font-size: 0.85em;
+}
