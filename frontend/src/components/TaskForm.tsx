@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './TaskForm.module.css';
-import { useCreateTask } from '@/hooks/useCreateTask';
+import { useTaskStore } from '@/store/taskStore';
 
 export const TaskForm = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [text, setText] = useState('');
   const [errors, setErrors] = useState<{ username?: string; email?: string; text?: string }>({});
-  const { createTask, loading, error, success } = useCreateTask();
+
+  const { createTaskInStore, loading, error, success, clearSuccess } = useTaskStore();
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        clearSuccess();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [success, clearSuccess]);
 
   const removeError = (field: keyof typeof errors) => {
     setErrors((prev) => {
@@ -34,13 +45,18 @@ export const TaskForm = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    await createTask({ username, email, text });
-    if (success) {
-      setUsername('');
-      setEmail('');
-      setText('');
-      setErrors({});
-    }
+    await createTaskInStore({
+      username,
+      email,
+      text,
+      status: false,
+      isEdited: false,
+    });
+
+    setUsername('');
+    setEmail('');
+    setText('');
+    setErrors({});
   };
 
   const handleUsernameBlur = () => {
@@ -102,8 +118,10 @@ export const TaskForm = () => {
           Добавить
         </button>
       </form>
-      {error && <p className={styles.error}>{error}</p>}
+
       {success && <p className={styles.success}>Задача успешно добавлена!</p>}
+
+      {error && <p className={styles.error}>{error}</p>}
     </>
   );
 };

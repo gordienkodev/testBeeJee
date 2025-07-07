@@ -1,37 +1,42 @@
-import { useState } from 'react';
-import { useTasks } from '@/hooks/useTasks';
+import { useEffect } from 'react';
+import { useTaskStore } from '@/store/taskStore';
 import { Pagination } from './Pagination';
 import { TaskItem } from './TaskItem';
-import type { Task } from '@/api/types';
-import styles from './TaskList.module.css';
-import { useUpdateTask } from '@/hooks/useUpdateTask';
 import { useAuthStore } from '@/store/authStore';
+import styles from './TaskList.module.css';
 
 const DEFAULT_PAGE = 1;
 
 export const TaskList = () => {
-  const [page, setPage] = useState(1);
-  const [sortField, setSortField] = useState<'username' | 'email' | 'status'>('username');
-  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+  const {
+    data,
+    loading,
+    error,
+    page,
+    sortField,
+    sortOrder,
+    fetch,
+    setPage,
+    setSortField,
+    toggleSortOrder,
+    updateTaskInStore,
+  } = useTaskStore();
+
   const isLoggedIn = useAuthStore((state) => state.isAuthenticated);
 
-  const { data, loading, error } = useTasks({ page, sortField, sortOrder });
+  useEffect(() => {
+    fetch();
+  }, [page, sortField, sortOrder, fetch]);
 
   const onSortChange = (field: 'username' | 'email' | 'status') => {
     if (sortField === field) {
-      setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
+      toggleSortOrder();
     } else {
       setSortField(field);
-      setSortOrder('ASC');
     }
-    setPage(1);
   };
 
-  const updateTaskObj = useUpdateTask();
-
-  const handleUpdateTask = (task: Task) => {
-    updateTaskObj.updateTask(task.id, { text: task.text, status: task.status });
-  };
+  const handleUpdateTask = updateTaskInStore;
 
   if (loading) return <p>Загрузка...</p>;
   if (error) return <p>Ошибка: {error}</p>;
@@ -66,7 +71,9 @@ export const TaskList = () => {
           totalPages={data.totalPages}
           hasPrev={data.hasPrev}
           hasNext={data.hasNext}
-          onPageChange={setPage}
+          onPageChange={(newPage) => {
+            setPage(newPage);
+          }}
         />
       )}
     </div>
