@@ -133,3 +133,65 @@ export const getTasks = async (req: Request<{}, {}, {}, GetTasksQuery>, res: Res
         res.status(500).json({ error: 'Failed to fetch tasks' });
     }
 };
+
+interface UpdateTaskBody {
+    text?: string;
+    status?: boolean;
+    isEdited?: boolean;
+}
+
+export const updateTask = async (
+    req: Request<{ id: string }, {}, UpdateTaskBody>,
+    res: Response
+) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({ error: 'Invalid task id' });
+            return;
+        }
+
+        const { text, status } = req.body;
+
+        const repo = AppDataSource.getRepository(Task);
+        const task = await repo.findOneBy({ id });
+
+        if (!task) {
+            res.status(404).json({ error: 'Task not found' });
+            return;
+        }
+
+        let textChanged = false;
+
+        if (text !== undefined) {
+            if (typeof text !== 'string' || text.length < 1 || text.length > 1000) {
+                res.status(400).json({ error: 'Invalid text' });
+                return;
+            }
+
+            if (task.text !== text) {
+                task.text = text;
+                textChanged = true;
+            }
+        }
+
+        if (status !== undefined) {
+            if (typeof status !== 'boolean') {
+                res.status(400).json({ error: 'Invalid status' });
+                return;
+            }
+            task.status = status;
+        }
+
+        if (textChanged && !task.isEdited) {
+            task.isEdited = true;
+        }
+
+        await repo.save(task);
+        res.json(task);
+
+    } catch (error) {
+        console.error('Error updating task:', error);
+        res.status(500).json({ error: 'Failed to update task' });
+    }
+};

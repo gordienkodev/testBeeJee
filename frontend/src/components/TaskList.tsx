@@ -1,13 +1,19 @@
 import { useState } from 'react';
-import styles from './TaskList.module.css';
 import { useTasks } from '@/hooks/useTasks';
 import { Pagination } from './Pagination';
 import { TaskItem } from './TaskItem';
+import type { Task } from '@/api/types';
+import styles from './TaskList.module.css';
+import { useUpdateTask } from '@/hooks/useUpdateTask';
+import { useAuthStore } from '@/store/authStore';
+
+const DEFAULT_PAGE_SIZE = 3;
 
 export const TaskList = () => {
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<'username' | 'email' | 'status'>('username');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+  const isLoggedIn = useAuthStore((state) => state.isAuthenticated);
 
   const { data, loading, error } = useTasks({ page, sortField, sortOrder });
 
@@ -19,6 +25,12 @@ export const TaskList = () => {
       setSortOrder('ASC');
     }
     setPage(1);
+  };
+
+  const updateTaskObj = useUpdateTask();
+
+  const handleUpdateTask = (task: Task) => {
+    updateTaskObj.updateTask(task.id, { text: task.text, status: task.status });
   };
 
   if (loading) return <p>Загрузка...</p>;
@@ -44,17 +56,19 @@ export const TaskList = () => {
 
       <ul className={styles.taskList}>
         {data.tasks.map((task) => (
-          <TaskItem key={task.id} task={task} />
+          <TaskItem key={task.id} task={task} onUpdate={handleUpdateTask} isLoggedIn={isLoggedIn} />
         ))}
       </ul>
 
-      <Pagination
-        page={data.page}
-        totalPages={data.totalPages}
-        hasPrev={data.hasPrev}
-        hasNext={data.hasNext}
-        onPageChange={setPage}
-      />
+      {data.tasks.length > DEFAULT_PAGE_SIZE && (
+        <Pagination
+          page={data.page}
+          totalPages={data.totalPages}
+          hasPrev={data.hasPrev}
+          hasNext={data.hasNext}
+          onPageChange={setPage}
+        />
+      )}
     </div>
   );
 };
