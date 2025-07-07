@@ -7,7 +7,7 @@ import styles from './TaskList.module.css';
 import { useUpdateTask } from '@/hooks/useUpdateTask';
 import { useAuthStore } from '@/store/authStore';
 
-const DEFAULT_PAGE_SIZE = 3;
+const DEFAULT_PAGE = 1;
 
 export const TaskList = () => {
   const [page, setPage] = useState(1);
@@ -60,7 +60,7 @@ export const TaskList = () => {
         ))}
       </ul>
 
-      {data.tasks.length > DEFAULT_PAGE_SIZE && (
+      {data.totalPages > DEFAULT_PAGE && (
         <Pagination
           page={data.page}
           totalPages={data.totalPages}

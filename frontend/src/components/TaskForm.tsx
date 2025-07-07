@@ -6,45 +6,104 @@ export const TaskForm = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [text, setText] = useState('');
-  const { createTask, loading, error } = useCreateTask();
+  const [errors, setErrors] = useState<{ username?: string; email?: string; text?: string }>({});
+  const { createTask, loading, error, success } = useCreateTask();
+
+  const removeError = (field: keyof typeof errors) => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
+
+  const validate = () => {
+    const newErrors: typeof errors = {};
+    if (!username.trim()) newErrors.username = 'Имя обязательно';
+    if (!email.trim()) {
+      newErrors.email = 'Email обязателен';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Email не валиден';
+    }
+    if (!text.trim()) newErrors.text = 'Текст задачи обязателен';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !email || !text) return;
+    if (!validate()) return;
 
     await createTask({ username, email, text });
+    if (success) {
+      setUsername('');
+      setEmail('');
+      setText('');
+      setErrors({});
+    }
+  };
 
-    setUsername('');
-    setEmail('');
-    setText('');
+  const handleUsernameBlur = () => {
+    if (!username.trim()) {
+      setErrors((prev) => ({ ...prev, username: 'Имя обязательно' }));
+    } else {
+      removeError('username');
+    }
+  };
+
+  const handleEmailBlur = () => {
+    if (!email.trim()) {
+      setErrors((prev) => ({ ...prev, email: 'Email обязателен' }));
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrors((prev) => ({ ...prev, email: 'Email не валиден' }));
+    } else {
+      removeError('email');
+    }
+  };
+
+  const handleTextBlur = () => {
+    if (!text.trim()) {
+      setErrors((prev) => ({ ...prev, text: 'Текст задачи обязателен' }));
+    } else {
+      removeError('text');
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <input
-        type="text"
-        placeholder="Имя"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Задача"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        required
-      />
-      <button type="submit" disabled={loading}>
-        Добавить
-      </button>
+    <>
+      <form onSubmit={handleSubmit} className={styles.form} noValidate>
+        <input
+          type="text"
+          placeholder="Имя"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          onBlur={handleUsernameBlur}
+        />
+        {errors.username && <p className={styles.error}>{errors.username}</p>}
+
+        <input
+          type="text"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={handleEmailBlur}
+        />
+        {errors.email && <p className={styles.error}>{errors.email}</p>}
+
+        <textarea
+          placeholder="Задача"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onBlur={handleTextBlur}
+        />
+        {errors.text && <p className={styles.error}>{errors.text}</p>}
+
+        <button type="submit" disabled={loading}>
+          Добавить
+        </button>
+      </form>
       {error && <p className={styles.error}>{error}</p>}
-    </form>
+      {success && <p className={styles.success}>Задача успешно добавлена!</p>}
+    </>
   );
 };
