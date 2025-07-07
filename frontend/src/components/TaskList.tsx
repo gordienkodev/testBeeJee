@@ -38,30 +38,41 @@ export const TaskList = () => {
 
   const handleUpdateTask = updateTaskInStore;
 
-  if (loading) return <p>Загрузка...</p>;
-  if (error) return <p>Ошибка: {error}</p>;
+  if (loading) return <div className={styles.wrapper}>Загрузка...</div>;
+  if (error) return <div className={styles.wrapper}>Ошибка: {error}</div>;
   if (!data) return null;
 
   return (
     <div className={styles.wrapper}>
       <ul className={styles.headerList}>
-        <li className={styles.headerListItem}>
-          <div className={styles.sortableHeader} onClick={() => onSortChange('username')}>
-            Имя {sortField === 'username' ? (sortOrder === 'ASC' ? '▲' : '▼') : ''}
+        <li className={styles.headerRow}>
+          <div
+            className={`${styles.headerItem} ${styles.sortableHeader}`}
+            onClick={() => onSortChange('username')}
+          >
+            Имя {sortField === 'username' && (sortOrder === 'ASC' ? '▲' : '▼')}
           </div>
-          <div className={styles.sortableHeader} onClick={() => onSortChange('email')}>
-            Email {sortField === 'email' ? (sortOrder === 'ASC' ? '▲' : '▼') : ''}
+          <div
+            className={`${styles.headerItem} ${styles.sortableHeader}`}
+            onClick={() => onSortChange('email')}
+          >
+            Email {sortField === 'email' && (sortOrder === 'ASC' ? '▲' : '▼')}
           </div>
-          <span>Задача</span>
-          <div className={styles.sortableHeader} onClick={() => onSortChange('status')}>
-            Статус {sortField === 'status' ? (sortOrder === 'ASC' ? '▲' : '▼') : ''}
+          <div className={styles.headerItem}>Задача</div>
+          <div
+            className={`${styles.headerItem} ${styles.sortableHeader}`}
+            onClick={() => onSortChange('status')}
+          >
+            Статус {sortField === 'status' && (sortOrder === 'ASC' ? '▲' : '▼')}
           </div>
         </li>
       </ul>
 
       <ul className={styles.taskList}>
         {data.tasks.map((task) => (
-          <TaskItem key={task.id} task={task} onUpdate={handleUpdateTask} isLoggedIn={isLoggedIn} />
+          <li key={task.id} className={styles.taskRow}>
+            <TaskItem task={task} onUpdate={handleUpdateTask} isLoggedIn={isLoggedIn} />
+          </li>
         ))}
       </ul>
 
@@ -71,9 +82,7 @@ export const TaskList = () => {
           totalPages={data.totalPages}
           hasPrev={data.hasPrev}
           hasNext={data.hasNext}
-          onPageChange={(newPage) => {
-            setPage(newPage);
-          }}
+          onPageChange={setPage}
         />
       )}
     </div>

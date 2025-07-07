@@ -16,20 +16,19 @@ export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
   const [status, setStatus] = useState(task.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { updateTask } = useUpdateTask();
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
   const handleSave = async () => {
     if (!onUpdate) return;
-    
+
     setIsUpdating(true);
     setError(null);
-    
+
     try {
       await updateTask(task.id, { text, status });
-      
       onUpdate({ ...task, text, status, isEdited: true });
     } catch (error) {
       if (error instanceof Error && error.message === 'UNAUTHORIZED') {
@@ -46,48 +45,63 @@ export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
 
   if (!isLoggedIn) {
     return (
-      <li>
-        <span>{task.username}</span>
-        <span>{task.email}</span>
-        <p>{task.text}</p>
-        {task.status ? 'выполнено' : 'не выполнено'} <br />
-        {task.isEdited && <em className={styles.editedMark}>отредактировано администратором</em>}
-      </li>
+      <>
+        <div className={styles.taskCell}>
+          <span>{task.username}</span>
+        </div>
+        <div className={styles.taskCell}>
+          <span>{task.email}</span>
+        </div>
+        <div className={styles.taskCell}>
+          <p>{task.text}</p>
+        </div>
+        <div className={styles.taskCell}>
+          <span>
+            {task.status ? 'выполнено' : 'не выполнено'}
+            {task.isEdited && <span className={styles.editedMark}>(изменено)</span>}
+          </span>
+        </div>
+      </>
     );
   }
 
   return (
     <>
-      <li>
+      <div className={styles.taskCell}>
         <span>{task.username}</span>
+      </div>
+      <div className={styles.taskCell}>
         <span>{task.email}</span>
-        <textarea 
-          value={text} 
+      </div>
+      <div className={styles.taskCell}>
+        <textarea
+          className={styles.textarea}
+          value={text}
           onChange={(e) => setText(e.target.value)}
           disabled={isUpdating}
+          rows={3}
         />
-        <label>
-          Статус:{' '}
-          <input 
-            type="checkbox" 
-            checked={status} 
+        <div className={styles.controls}>
+          <button className={styles.saveButton} onClick={handleSave} disabled={isUpdating}>
+            {isUpdating ? 'Сохранение...' : 'Сохранить'}
+          </button>
+          {error && <div className={styles.error}>{error}</div>}
+        </div>
+      </div>
+      <div className={styles.taskCell}>
+        <label className={styles.statusLabel}>
+          <input
+            type="checkbox"
+            className={styles.statusCheckbox}
+            checked={status}
             onChange={(e) => setStatus(e.target.checked)}
             disabled={isUpdating}
           />
+          {status ? 'выполнено' : 'не выполнено'}
         </label>
-      </li>
-
-      <div className={styles.taskItemControls}>
-        <button 
-          className={styles.saveButton} 
-          onClick={handleSave}
-          disabled={isUpdating}
-        >
-          {isUpdating ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        
-        {error && <span className={styles.error}>{error}</span>}
-        {task.isEdited && <em className={styles.editedMark}>отредактировано администратором</em>}
+        {task.isEdited && !isUpdating && (
+          <span className={styles.editedMark}>(отредактировано администратором)</span>
+        )}
       </div>
     </>
   );
