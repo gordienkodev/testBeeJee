@@ -88,31 +88,37 @@ export const TaskForm = () => {
   return (
     <>
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        <input
-          type="text"
-          placeholder="Имя"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          onBlur={handleUsernameBlur}
-        />
-        {errors.username && <p className={styles.error}>{errors.username}</p>}
+        <div className={styles.formGroup}>
+          <input
+            type="text"
+            placeholder="Имя"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onBlur={handleUsernameBlur}
+          />
+          {errors.username && <p className={styles.error}>{errors.username}</p>}
+        </div>
 
-        <input
-          type="text"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={handleEmailBlur}
-        />
-        {errors.email && <p className={styles.error}>{errors.email}</p>}
+        <div className={styles.formGroup}>
+          <input
+            type="text"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={handleEmailBlur}
+          />
+          {errors.email && <p className={styles.error}>{errors.email}</p>}
+        </div>
 
-        <textarea
-          placeholder="Задача"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onBlur={handleTextBlur}
-        />
-        {errors.text && <p className={styles.error}>{errors.text}</p>}
+        <div className={styles.formGroup}>
+          <textarea
+            placeholder="Задача"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={handleTextBlur}
+          />
+          {errors.text && <p className={styles.error}>{errors.text}</p>}
+        </div>
 
         <button type="submit" disabled={loading}>
           Добавить
@@ -121,7 +127,7 @@ export const TaskForm = () => {
 
       {success && <p className={styles.success}>Задача успешно добавлена!</p>}
 
-      {error && <p className={styles.error}>{error}</p>}
+      {error && <p className={styles.formError}>{error}</p>}
     </>
   );
 };
