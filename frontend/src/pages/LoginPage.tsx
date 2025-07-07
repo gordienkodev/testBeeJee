@@ -9,12 +9,20 @@ export function LoginPage() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [validationError, setValidationError] = useState('');
   const { login, logout, error, loading, isAuthenticated } = useAuthStore();
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!username.trim() || !password.trim()) {
+      setValidationError('Поля обязательны для заполнения');
+      return;
+    }
+
+    setValidationError('');
     const success = await login(username, password);
     if (success) {
       setUsername('');
@@ -44,7 +52,6 @@ export function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                required
               />
             </div>
             <div className={styles.formGroup}>
@@ -54,7 +61,6 @@ export function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
               />
             </div>
             <button className={styles.button} type="submit" disabled={loading}>
@@ -70,7 +76,11 @@ export function LoginPage() {
         )}
       </div>
 
-      {error && (
+      {validationError && (
+        <div className={`${styles.message} ${styles.error}`}>{validationError}</div>
+      )}
+
+      {!validationError && error && (
         <div className={`${styles.message} ${styles.error}`}>Неправильные реквизиты доступа!</div>
       )}
 
