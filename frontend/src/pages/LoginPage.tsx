@@ -1,16 +1,25 @@
 import { useState } from 'react';
-import { useLogin } from '@/hooks/useLogin';
+import { useAuthStore } from '@/store/authStore';
 import styles from './LoginPage.module.css';
 import { useNavigate } from 'react-router-dom';
+import { useAuthCheck } from '@/hooks/useAuthCheck';
 
 export function LoginPage() {
+  useAuthCheck();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login, logout, error, success, loading, isAuthenticated } = useLogin();
+  const { login, logout, error, loading, isAuthenticated } = useAuthStore();
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(username, password);
+    const success = await login(username, password);
+    if (success) {
+      setUsername('');
+      setPassword('');
+    }
   };
 
   const handleLogout = async () => {
@@ -19,8 +28,6 @@ export function LoginPage() {
     setPassword('');
   };
 
-  const navigate = useNavigate();
-
   const handleGoToList = () => {
     navigate('/');
   };
@@ -28,15 +35,7 @@ export function LoginPage() {
   return (
     <>
       <div className={styles.container}>
-        {error && <div className={`${styles.message} ${styles.error}`}>{error}</div>}
-        {success && isAuthenticated ? (
-          <>
-            <div className={`${styles.message} ${styles.success}`}>Вы успешно вошли в систему!</div>
-            <button className={styles.button} onClick={handleLogout}>
-              Выйти
-            </button>
-          </>
-        ) : (
+        {!isAuthenticated && (
           <form onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Имя пользователя:</label>
@@ -63,7 +62,21 @@ export function LoginPage() {
             </button>
           </form>
         )}
+
+        {isAuthenticated && (
+          <button className={styles.button} onClick={handleLogout}>
+            Выйти
+          </button>
+        )}
       </div>
+
+      {error && (
+        <div className={`${styles.message} ${styles.error}`}>Неправильные реквизиты доступа!</div>
+      )}
+
+      {isAuthenticated && (
+        <div className={`${styles.message} ${styles.success}`}>Вы успешно вошли в систему!</div>
+      )}
 
       <button className={styles.button} onClick={handleGoToList}>
         Перейти к списку задач
