@@ -29,6 +29,9 @@ Deploy: [https://test-bee-jee.vercel.app/](https://test-bee-jee.vercel.app/)
 - Start server: `$ npm run dev`.
 - Now you can see web application to the address: `http://localhost:4000/`.
 
+### env
+- In Frontend need to add real VITE_API_URL
+- In Backend need to add real DATABASE_URL
 
 ### Build Frontend and Backend
 
