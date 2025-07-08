@@ -19,7 +19,6 @@ export const TaskList = () => {
     setPage,
     setSortField,
     toggleSortOrder,
-    updateTaskInStore,
   } = useTaskStore();
 
   const isLoggedIn = useAuthStore((state) => state.isAuthenticated);
@@ -35,8 +34,6 @@ export const TaskList = () => {
       setSortField(field);
     }
   };
-
-  const handleUpdateTask = updateTaskInStore;
 
   if (loading) return <div className={styles.wrapper}>Загрузка...</div>;
   if (error) return <div className={styles.wrapper}>Ошибка: {error}</div>;
@@ -71,7 +68,7 @@ export const TaskList = () => {
       <ul className={styles.taskList}>
         {data.tasks.map((task) => (
           <li key={task.id} className={styles.taskRow}>
-            <TaskItem task={task} onUpdate={handleUpdateTask} isLoggedIn={isLoggedIn} />
+            <TaskItem task={task} isLoggedIn={isLoggedIn} />
           </li>
         ))}
       </ul>
