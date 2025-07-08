@@ -4,8 +4,8 @@ Deploy: [https://test-bee-jee.vercel.app/](https://test-bee-jee.vercel.app/)
 
 - auth: [https://test-bee-jee.vercel.app/login](https://test-bee-jee.vercel.app/login)
 
-Backend - pg and crud in render.com
-Frontend - react in vercel.com
+- Backend - pg and crud in render.com
+- Frontend - react in vercel.com
 
 ## Author
 
