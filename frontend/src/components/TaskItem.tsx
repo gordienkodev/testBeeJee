@@ -58,7 +58,7 @@ export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
         <div className={styles.taskCell}>
           <span>
             {task.status ? 'выполнено' : 'не выполнено'}
-            {task.isEdited && <span className={styles.editedMark}>(изменено)</span>}
+            {task.isEdited && <span className={styles.editedMark}>(отредактировано администратором)</span>}
           </span>
         </div>
       </>
