@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import styles from './LoginPage.module.css';
 import { useNavigate } from 'react-router-dom';
@@ -7,10 +6,20 @@ import { useAuthCheck } from '@/hooks/useAuthCheck';
 export function LoginPage() {
   useAuthCheck();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [validationError, setValidationError] = useState('');
-  const { login, logout, error, loading, isAuthenticated } = useAuthStore();
+  const {
+    username,
+    password,
+    validationError,
+    login,
+    logout,
+    error,
+    loading,
+    isAuthenticated,
+    setUsername,
+    setPassword,
+    setValidationError,
+    clearCredentials,
+  } = useAuthStore();
 
   const navigate = useNavigate();
 
@@ -25,15 +34,12 @@ export function LoginPage() {
     setValidationError('');
     const success = await login(username, password);
     if (success) {
-      setUsername('');
-      setPassword('');
+      clearCredentials();
     }
   };
 
   const handleLogout = async () => {
     await logout();
-    setUsername('');
-    setPassword('');
   };
 
   const handleGoToList = () => {
