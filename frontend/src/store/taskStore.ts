@@ -2,6 +2,18 @@ import { create } from 'zustand';
 import { fetchTasks, createTask, updateTask } from '@/api/tasks';
 import type { Task, TaskResponse } from '@/api/types';
 
+interface FormData {
+  username: string;
+  email: string;
+  text: string;
+}
+
+interface FormErrors {
+  username?: string;
+  email?: string;
+  text?: string;
+}
+
 interface TaskStoreState {
   data: TaskResponse | null;
   loading: boolean;
@@ -10,6 +22,8 @@ interface TaskStoreState {
   sortField: 'username' | 'email' | 'status' | '';
   sortOrder: 'ASC' | 'DESC';
   success: boolean;
+  formData: FormData;
+  formErrors: FormErrors;
 
   fetch: (options?: {
     page?: number;
@@ -22,6 +36,12 @@ interface TaskStoreState {
   updateTaskInStore: (task: Task) => Promise<void>;
   createTaskInStore: (taskData: Omit<Task, 'id'>) => Promise<void>;
   clearSuccess: () => void;
+
+  setFormField: (field: keyof FormData, value: string) => void;
+  setFormError: (field: keyof FormErrors, error: string) => void;
+  removeFormError: (field: keyof FormErrors) => void;
+  clearForm: () => void;
+  validateForm: () => boolean;
 }
 
 export const useTaskStore = create<TaskStoreState>((set, get) => ({
@@ -32,6 +52,13 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
   sortField: '',
   sortOrder: 'DESC',
   success: false,
+
+  formData: {
+    username: '',
+    email: '',
+    text: '',
+  },
+  formErrors: {},
 
   fetch: async (options = {}) => {
     const state = get();
@@ -97,5 +124,48 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
 
   clearSuccess: () => {
     set({ success: false });
+  },
+
+  setFormField: (field, value) => {
+    set((state) => ({
+      formData: { ...state.formData, [field]: value },
+    }));
+  },
+
+  setFormError: (field, error) => {
+    set((state) => ({
+      formErrors: { ...state.formErrors, [field]: error },
+    }));
+  },
+
+  removeFormError: (field) => {
+    set((state) => {
+      const newErrors = { ...state.formErrors };
+      delete newErrors[field];
+      return { formErrors: newErrors };
+    });
+  },
+
+  clearForm: () => {
+    set({
+      formData: { username: '', email: '', text: '' },
+      formErrors: {},
+    });
+  },
+
+  validateForm: () => {
+    const { formData } = get();
+    const errors: FormErrors = {};
+
+    if (!formData.username.trim()) errors.username = 'Имя обязательно';
+    if (!formData.email.trim()) {
+      errors.email = 'Email обязателен';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Email не валиден';
+    }
+    if (!formData.text.trim()) errors.text = 'Текст задачи обязателен';
+
+    set({ formErrors: errors });
+    return Object.keys(errors).length === 0;
   },
 }));
