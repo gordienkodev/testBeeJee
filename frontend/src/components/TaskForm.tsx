@@ -1,87 +1,74 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import styles from './TaskForm.module.css';
 import { useTaskStore } from '@/store/taskStore';
 
 export const TaskForm = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [text, setText] = useState('');
-  const [errors, setErrors] = useState<{ username?: string; email?: string; text?: string }>({});
-
-  const { createTaskInStore, loading, error, success, clearSuccess } = useTaskStore();
+  const {
+    formData,
+    formErrors,
+    loading,
+    error,
+    success,
+    setFormField,
+    setFormError,
+    removeFormError,
+    clearForm,
+    validateForm,
+    createTaskInStore,
+    clearSuccess,
+  } = useTaskStore();
 
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
         clearSuccess();
       }, 3000);
-
       return () => clearTimeout(timer);
     }
   }, [success, clearSuccess]);
 
-  const removeError = (field: keyof typeof errors) => {
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[field];
-      return newErrors;
-    });
-  };
-
-  const validate = () => {
-    const newErrors: typeof errors = {};
-    if (!username.trim()) newErrors.username = 'Имя обязательно';
-    if (!email.trim()) {
-      newErrors.email = 'Email обязателен';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Email не валиден';
-    }
-    if (!text.trim()) newErrors.text = 'Текст задачи обязателен';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validateForm()) return;
 
     await createTaskInStore({
-      username,
-      email,
-      text,
+      username: formData.username,
+      email: formData.email,
+      text: formData.text,
       status: false,
       isEdited: false,
     });
 
-    setUsername('');
-    setEmail('');
-    setText('');
-    setErrors({});
+    clearForm();
   };
 
-  const handleUsernameBlur = () => {
-    if (!username.trim()) {
-      setErrors((prev) => ({ ...prev, username: 'Имя обязательно' }));
-    } else {
-      removeError('username');
-    }
-  };
+  const handleFieldBlur = (field: keyof typeof formData) => {
+    const value = formData[field];
 
-  const handleEmailBlur = () => {
-    if (!email.trim()) {
-      setErrors((prev) => ({ ...prev, email: 'Email обязателен' }));
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErrors((prev) => ({ ...prev, email: 'Email не валиден' }));
-    } else {
-      removeError('email');
-    }
-  };
-
-  const handleTextBlur = () => {
-    if (!text.trim()) {
-      setErrors((prev) => ({ ...prev, text: 'Текст задачи обязателен' }));
-    } else {
-      removeError('text');
+    switch (field) {
+      case 'username':
+        if (!value.trim()) {
+          setFormError('username', 'Имя обязательно');
+        } else {
+          removeFormError('username');
+        }
+        break;
+      case 'email':
+        if (!value.trim()) {
+          setFormError('email', 'Email обязателен');
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          setFormError('email', 'Email не валиден');
+        } else {
+          removeFormError('email');
+        }
+        break;
+      case 'text':
+        if (!value.trim()) {
+          setFormError('text', 'Текст задачи обязателен');
+        } else {
+          removeFormError('text');
+        }
+        break;
     }
   };
 
@@ -92,32 +79,32 @@ export const TaskForm = () => {
           <input
             type="text"
             placeholder="Имя"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onBlur={handleUsernameBlur}
+            value={formData.username}
+            onChange={(e) => setFormField('username', e.target.value)}
+            onBlur={() => handleFieldBlur('username')}
           />
-          {errors.username && <p className={styles.error}>{errors.username}</p>}
+          {formErrors.username && <p className={styles.error}>{formErrors.username}</p>}
         </div>
 
         <div className={styles.formGroup}>
           <input
             type="text"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onBlur={handleEmailBlur}
+            value={formData.email}
+            onChange={(e) => setFormField('email', e.target.value)}
+            onBlur={() => handleFieldBlur('email')}
           />
-          {errors.email && <p className={styles.error}>{errors.email}</p>}
+          {formErrors.email && <p className={styles.error}>{formErrors.email}</p>}
         </div>
 
         <div className={styles.formGroup}>
           <textarea
             placeholder="Задача"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onBlur={handleTextBlur}
+            value={formData.text}
+            onChange={(e) => setFormField('text', e.target.value)}
+            onBlur={() => handleFieldBlur('text')}
           />
-          {errors.text && <p className={styles.error}>{errors.text}</p>}
+          {formErrors.text && <p className={styles.error}>{formErrors.text}</p>}
         </div>
 
         <button type="submit" disabled={loading}>
@@ -126,7 +113,6 @@ export const TaskForm = () => {
       </form>
 
       {success && <p className={styles.success}>Задача успешно добавлена!</p>}
-
       {error && <p className={styles.formError}>{error}</p>}
     </>
   );
