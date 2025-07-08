@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import type { Task } from '@/api/types';
+import { useTaskStore } from '@/store/taskStore';
 import { useUpdateTask } from '@/hooks/useUpdateTask';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -7,40 +8,45 @@ import styles from './TaskItem.module.css';
 
 interface Props {
   task: Task;
-  onUpdate?: (updatedTask: Task) => void;
   isLoggedIn: boolean;
 }
 
-export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
-  const [text, setText] = useState(task.text);
-  const [status, setStatus] = useState(task.status);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const { updateTask } = useUpdateTask();
-  const logout = useAuthStore((state) => state.logout);
+export const TaskItem = ({ task, isLoggedIn }: Props) => {
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  const { updateTask } = useUpdateTask();
+
+  const {
+    initializeTaskEdit,
+    updateTaskEditText,
+    updateTaskEditStatus,
+    saveTaskEdit,
+    getTaskEditData,
+  } = useTaskStore();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      initializeTaskEdit(task.id, task);
+    }
+  }, [task.id, task.text, task.status, isLoggedIn, initializeTaskEdit]);
+
+  const editData = getTaskEditData(task.id);
 
   const handleSave = async () => {
-    if (!onUpdate) return;
+    const result = await saveTaskEdit(task.id, updateTask);
 
-    setIsUpdating(true);
-    setError(null);
-
-    try {
-      await updateTask(task.id, { text, status });
-      onUpdate({ ...task, text, status, isEdited: true });
-    } catch (error) {
-      if (error instanceof Error && error.message === 'UNAUTHORIZED') {
-        await logout();
-        navigate('/login');
-      } else {
-        setError('Не удалось сохранить изменения');
-        console.error('Ошибка при сохранении:', error);
-      }
-    } finally {
-      setIsUpdating(false);
+    if (result.unauthorized) {
+      await logout();
+      navigate('/login');
     }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateTaskEditText(task.id, e.target.value);
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateTaskEditStatus(task.id, e.target.checked);
   };
 
   if (!isLoggedIn) {
@@ -53,16 +59,22 @@ export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
           <span>{task.email}</span>
         </div>
         <div className={styles.taskCell}>
-          <p>{task.text}</p>
+          <p>{task.text} {task.isEdited && (
+              <span className={styles.editedMark}>(отредактировано администратором)</span>
+            )}</p>
         </div>
         <div className={styles.taskCell}>
           <span>
             {task.status ? 'выполнено' : 'не выполнено'}
-            {task.isEdited && <span className={styles.editedMark}>(отредактировано администратором)</span>}
+            
           </span>
         </div>
       </>
     );
+  }
+
+  if (!editData) {
+    return null;
   }
 
   return (
@@ -76,16 +88,18 @@ export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
       <div className={styles.taskCell}>
         <textarea
           className={styles.textarea}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={isUpdating}
+          value={editData.text}
+          onChange={handleTextChange}
+          disabled={editData.isUpdating}
           rows={3}
-        />
+        /> {task.isEdited && !editData.isUpdating && (
+          <span className={styles.editedMark}>(отредактировано администратором)</span>
+        )}
         <div className={styles.controls}>
-          <button className={styles.saveButton} onClick={handleSave} disabled={isUpdating}>
-            {isUpdating ? 'Сохранение...' : 'Сохранить'}
+          <button className={styles.saveButton} onClick={handleSave} disabled={editData.isUpdating}>
+            {editData.isUpdating ? 'Сохранение...' : 'Сохранить'}
           </button>
-          {error && <div className={styles.error}>{error}</div>}
+          {editData.error && <div className={styles.error}>{editData.error}</div>}
         </div>
       </div>
       <div className={styles.taskCell}>
@@ -93,15 +107,13 @@ export const TaskItem = ({ task, onUpdate, isLoggedIn }: Props) => {
           <input
             type="checkbox"
             className={styles.statusCheckbox}
-            checked={status}
-            onChange={(e) => setStatus(e.target.checked)}
-            disabled={isUpdating}
+            checked={editData.status}
+            onChange={handleStatusChange}
+            disabled={editData.isUpdating}
           />
-          {status ? 'выполнено' : 'не выполнено'}
+          {editData.status ? 'выполнено' : 'не выполнено'}
         </label>
-        {task.isEdited && !isUpdating && (
-          <span className={styles.editedMark}>(отредактировано администратором)</span>
-        )}
+        
       </div>
     </>
   );

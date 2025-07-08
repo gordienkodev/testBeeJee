@@ -14,6 +14,13 @@ interface FormErrors {
   text?: string;
 }
 
+interface TaskEditData {
+  text: string;
+  status: boolean;
+  isUpdating: boolean;
+  error: string | null;
+}
+
 interface TaskStoreState {
   data: TaskResponse | null;
   loading: boolean;
@@ -24,6 +31,7 @@ interface TaskStoreState {
   success: boolean;
   formData: FormData;
   formErrors: FormErrors;
+  editingTasks: Record<string, TaskEditData>;
 
   fetch: (options?: {
     page?: number;
@@ -42,6 +50,17 @@ interface TaskStoreState {
   removeFormError: (field: keyof FormErrors) => void;
   clearForm: () => void;
   validateForm: () => boolean;
+
+  initializeTaskEdit: (taskId: number, task: Task) => void;
+  updateTaskEditText: (taskId: number, text: string) => void;
+  updateTaskEditStatus: (taskId: number, status: boolean) => void;
+  setTaskEditError: (taskId: number, error: string | null) => void;
+  setTaskEditUpdating: (taskId: number, isUpdating: boolean) => void;
+  saveTaskEdit: (
+    taskId: number,
+    updateTaskFn: (id: number, data: { text: string; status: boolean }) => Promise<void>
+  ) => Promise<{ success: boolean; unauthorized?: boolean }>;
+  getTaskEditData: (taskId: number) => TaskEditData | null;
 }
 
 export const useTaskStore = create<TaskStoreState>((set, get) => ({
@@ -52,6 +71,7 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
   sortField: '',
   sortOrder: 'DESC',
   success: false,
+  editingTasks: {},
 
   formData: {
     username: '',
@@ -167,5 +187,124 @@ export const useTaskStore = create<TaskStoreState>((set, get) => ({
 
     set({ formErrors: errors });
     return Object.keys(errors).length === 0;
+  },
+
+  initializeTaskEdit: (taskId, task) => {
+    set((state) => ({
+      editingTasks: {
+        ...state.editingTasks,
+        [taskId]: {
+          text: task.text,
+          status: task.status,
+          isUpdating: false,
+          error: null,
+        },
+      },
+    }));
+  },
+
+  updateTaskEditText: (taskId, text) => {
+    set((state) => ({
+      editingTasks: {
+        ...state.editingTasks,
+        [taskId]: {
+          ...state.editingTasks[taskId],
+          text,
+        },
+      },
+    }));
+  },
+
+  updateTaskEditStatus: (taskId, status) => {
+    set((state) => ({
+      editingTasks: {
+        ...state.editingTasks,
+        [taskId]: {
+          ...state.editingTasks[taskId],
+          status,
+        },
+      },
+    }));
+  },
+
+  setTaskEditError: (taskId, error) => {
+    set((state) => ({
+      editingTasks: {
+        ...state.editingTasks,
+        [taskId]: {
+          ...state.editingTasks[taskId],
+          error,
+        },
+      },
+    }));
+  },
+
+  setTaskEditUpdating: (taskId, isUpdating) => {
+    set((state) => ({
+      editingTasks: {
+        ...state.editingTasks,
+        [taskId]: {
+          ...state.editingTasks[taskId],
+          isUpdating,
+        },
+      },
+    }));
+  },
+
+  saveTaskEdit: async (taskId, updateTaskFn) => {
+    const state = get();
+    const editData = state.editingTasks[taskId];
+
+    if (!editData) {
+      return { success: false };
+    }
+
+    set((state) => ({
+      editingTasks: {
+        ...state.editingTasks,
+        [taskId]: {
+          ...state.editingTasks[taskId],
+          isUpdating: true,
+          error: null,
+        },
+      },
+    }));
+
+    try {
+      await updateTaskFn(taskId, { text: editData.text, status: editData.status });
+      await get().fetch();
+      return { success: true };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+        return { success: false, unauthorized: true };
+      } else {
+        set((state) => ({
+          editingTasks: {
+            ...state.editingTasks,
+            [taskId]: {
+              ...state.editingTasks[taskId],
+              error: 'Не удалось сохранить изменения',
+            },
+          },
+        }));
+        console.error('Ошибка при сохранении:', error);
+        return { success: false };
+      }
+    } finally {
+      set((state) => ({
+        editingTasks: {
+          ...state.editingTasks,
+          [taskId]: {
+            ...state.editingTasks[taskId],
+            isUpdating: false,
+          },
+        },
+      }));
+    }
+  },
+
+  getTaskEditData: (taskId) => {
+    const state = get();
+    return state.editingTasks[taskId] || null;
   },
 }));
